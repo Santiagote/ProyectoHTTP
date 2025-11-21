@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Juegos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 600px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005fcc;
+    }
+    pre {
+      background: #222;
+      color: #0f0;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Administrador de Juegos</h1>
+
+<div class="card">
+  <h2>Crear Juego</h2>
+  <form id="crearForm">
+    <label>Nombre del juego:</label>
+    <input type="text" id="nombre" required />
+
+    <label>Género:</label>
+    <input type="text" id="genero" required />
+
+    <label>Plataforma:</label>
+    <input type="text" id="plataforma" required />
+
+    <label>Precio:</label>
+    <input type="number" id="precio" required />
+
+
+    <button type="submit">Guardar Juego</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Ver todos los juegos</h2>
+  <button onclick="cargarJuegos()">Cargar Lista</button>
+  <pre id="lista"></pre>
+</div>
+
+<script>
+  const BASE_URL = "http://localhost:8080/api/juegos";
+
+  // Crear juego
+  document.getElementById("crearForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const juego = {
+      nombre: document.getElementById("nombre").value,
+      genero: document.getElementById("genero").value,
+      plataforma: document.getElementById("plataforma").value,
+      precio: parseFloat(document.getElementById("precio").value),
+    };
+
+    const res = await fetch(BASE_URL + "/guardar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(juego)
+    });
+
+    const data = await res.json();
+    alert("Juego guardado correctamente");
+    console.log(data);
+  });
+
+  // Obtener todos
+  async function cargarJuegos() {
+    const res = await fetch(BASE_URL);
+    const data = await res.json();
+    document.getElementById("lista").textContent = JSON.stringify(data, null, 2);
+  }
+</script>
+
+  <h2 class="text-xl font-semibold mt-6 mb-2">Listado de Juegos</h2>
+  <table id="tablaJuegos" class="min-w-full bg-white border border-gray-300">
+    <thead>
+      <tr class="bg-gray-200 text-left">
+        <th class="p-2 border">ID</th>
+        <th class="p-2 border">Nombre</th>
+        <th class="p-2 border">Género</th>
+        <th class="p-2 border">Plataforma</th>
+        <th class="p-2 border">Precio</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+      <thead>
+        <tr>
+          <th class="p-2 border">Acciones</th>
+        </tr>
+      </thead>
+  </table>
+
+  <script>
+    async function agregarJuego() {
+      const juego = {
+        nombre: document.getElementById("nombre").value,
+        genero: document.getElementById("genero").value,
+        plataforma: document.getElementById("plataforma").value,
+        precio: parseFloat(document.getElementById("precio").value)
+      };
+
+      await fetch("http://localhost:8080/api/juegos/guardar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(juego)
+      });
+
+      cargarJuegos();
+    }
+
+    async function cargarJuegos() {
+      const res = await fetch("http://localhost:8080/api/juegos");
+      const juegos = await res.json();
+
+      const tbody = document.querySelector("#tablaJuegos tbody");
+      tbody.innerHTML = "";
+
+      juegos.forEach(j => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class='border p-2'>${j.id}</td>
+          <td class='border p-2'>${j.nombre}</td>
+          <td class='border p-2'>${j.genero}</td>
+          <td class='border p-2'>${j.plataforma}</td>
+          <td class='border p-2'>$${j.precio}</td>
+          <td class='border p-2'>
+            <button onclick="editarJuego(${j.id})">Editar</button>
+            <button onclick="eliminarJuego(${j.id})">Eliminar</button>
+          }</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    cargarJuegos();
+  
+
+    // === ACTUALIZAR JUEGO ===
+    async function editarJuego(id) {
+      const nuevoNombre = prompt("Nuevo nombre:");
+      const nuevoGenero = prompt("Nuevo género:");
+      const nuevaPlataforma = prompt("Nueva plataforma:");
+      const nuevoPrecio = prompt("Nuevo precio:");
+
+      if (!nuevoNombre || !nuevoGenero || !nuevaPlataforma || !nuevoPrecio) {
+        alert("Todos los campos son obligatorios.");
+        return;
+      }
+
+      const juegoActualizado = {
+        nombre: nuevoNombre,
+        genero: nuevoGenero,
+        plataforma: nuevaPlataforma,
+        precio: parseFloat(nuevoPrecio)
+      };
+
+      const res = await fetch(`${BASE_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(juegoActualizado)
+      });
+
+      if (res.ok) {
+        alert("Juego actualizado correctamente ✔");
+        cargarJuegos();
+      } else {
+        alert("Error al actualizar ❌");
+      }
+    }
+
+    // === ELIMINAR JUEGO ===
+    async function eliminarJuego(id) {
+      if (!confirm("¿Seguro que deseas eliminar este juego?")) return;
+
+      const res = await fetch(`${BASE_URL}/${id}`, { method: "DELETE" });
+
+      if (res.ok) {
+        alert("Juego eliminado ✔");
+        cargarJuegos();
+      } else {
+        alert("Error al eliminar ❌");
+      }
+    }
+
+</script>
+</body>
+</html>

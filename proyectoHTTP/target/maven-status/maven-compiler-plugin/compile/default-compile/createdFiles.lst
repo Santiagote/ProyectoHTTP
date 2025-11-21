@@ -1,0 +1,5 @@
+com\sistemasDigitales\proyectoHTTP\repository\JuegoRepository.class
+com\sistemasDigitales\proyectoHTTP\service\JuegoService.class
+com\sistemasDigitales\proyectoHTTP\controller\JuegoController.class
+com\sistemasDigitales\proyectoHTTP\model\Juego.class
+com\sistemasDigitales\proyectoHTTP\ProyectoHttpApplication.class
